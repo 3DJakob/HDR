@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
+import { readImage } from './raw'
 
 let mainWindow: BrowserWindow | null
 
@@ -10,7 +11,7 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 //     ? process.resourcesPath
 //     : app.getAppPath()
 
-function createWindow () {
+function createWindow (): void {
   mainWindow = new BrowserWindow({
     // icon: path.join(assetsPath, 'assets', 'icon.png'),
     width: 1100,
@@ -23,19 +24,23 @@ function createWindow () {
     }
   })
 
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).catch(console.error)
 
   mainWindow.on('closed', () => {
     mainWindow = null
   })
 }
 
-async function registerListeners () {
+async function registerListeners (): Promise<void> {
   /**
    * This comes from bridge integration, check bridge.ts
    */
   ipcMain.on('message', (_, message) => {
     console.log(message)
+    console.log('load raw...')
+    const imageData = readImage()
+    // send data to renderer
+    mainWindow?.webContents.send('message', imageData)
   })
 }
 
