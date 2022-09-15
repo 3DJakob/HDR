@@ -1,6 +1,6 @@
-## Electron + TypeScript + React
+## HDR image creator
 
-Boilerplate for a project using Electron, React and Typescript.
+The purpose of this repository is to create an app that can merge multiple RAW files into a HDR image. The project is created as a Electron app running a typescript react front-end.
 
 ## Installation
 
@@ -25,10 +25,6 @@ To generate the project package based on the OS you're running on, just run:
 ```bash
 yarn package
 ```
-
-## Contributing
-
-Pull requests are always welcome 😃.
 
 ## License
 
