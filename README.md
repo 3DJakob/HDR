@@ -1,6 +1,6 @@
 ## HDR image creator
 
-The purpose of this repository is to create an app that can merge multiple RAW files into a HDR image. The project is created as a Electron app running a typescript react front-end.
+The purpose of this repository is to create an app that can merge multiple RAW files into a HDR image. The project is created as an Electron app running a typescript react front-end.
 
 ## Installation
 
