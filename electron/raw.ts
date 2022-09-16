@@ -26,6 +26,8 @@ export const readImage = (): any => {
 
   // get image dimensions
   const info: any = dcraw(buf, { verbose: true, identify: true })
+  // interpolate RGB as four color -f
+  // const data = dcraw(buf, { verbose: true, deadpixels: true, setFourColorMode: true })
   const data: Uint8Array = dcraw(buf, { verbose: true, deadpixels: true })
 
   const { width, height } = info
