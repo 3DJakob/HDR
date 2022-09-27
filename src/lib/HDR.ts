@@ -98,7 +98,7 @@ export function extractSampleValuesFromImages (images: image[]): [Matrix, Matrix
 
 export const sampleChannels = extractSampleValuesFromImages(sampleImages)
 
-export function gSolve (channel: [Matrix, Matrix, Matrix], shutterSpeed: number[], smoothness: number, samples: number, imageAmount: number): {g: number[], LE: number[]} {
+export function gSolveOneChannel (channel: Matrix, shutterSpeed: number[], smoothness: number, samples: number, imageAmount: number): {g: number[], LE: number[]} {
   const n = 255
   console.log(samples * imageAmount + n + 1)
   const A = Matrix.zeros(samples * imageAmount + n + 1, n + samples)
@@ -108,13 +108,8 @@ export function gSolve (channel: [Matrix, Matrix, Matrix], shutterSpeed: number[
   let k = 0
   for (let i = 0; i < samples; i++) {
     for (let j = 0; j < imageAmount; j++) {
-      // Channel = [red, green, blue]
-      const redChannel = channel[0]
-      const greenChannel = channel[1]
-      const blueChannel = channel[2]
-
-      const wij = weight(Number(redChannel.get(i, j)) + 1)
-      A.set(k, redChannel.get(i, j), wij)
+      const wij = weight(Number(channel.get(i, j)) + 1)
+      A.set(k, channel.get(i, j), wij)
       A.set(k, n + i, -wij)
       b.set(k, 1, wij * shutterSpeed[j])
       k = k + 1
@@ -143,5 +138,39 @@ export function gSolve (channel: [Matrix, Matrix, Matrix], shutterSpeed: number[
   return {
     g,
     LE
+  }
+}
+
+export interface gSolveReturn {
+  gRed: number[]
+  gGreen: number[]
+  gBlue: number[]
+  LERed: number[]
+  LEGreen: number[]
+  LEBlue: number[]
+}
+
+export function gsolveImage (
+  channel: [Matrix, Matrix, Matrix],
+  shutterSpeed: number[],
+  smoothness: number,
+  samples: number,
+  imageAmount: number
+): gSolveReturn {
+  const rChannel = channel[0]
+  const gChannel = channel[1]
+  const bChannel = channel[2]
+
+  const { g: gRed, LE: LERed } = gSolveOneChannel(rChannel, shutterSpeed, smoothness, samples, imageAmount)
+  const { g: gGreen, LE: LEGreen } = gSolveOneChannel(gChannel, shutterSpeed, smoothness, samples, imageAmount)
+  const { g: gBlue, LE: LEBlue } = gSolveOneChannel(bChannel, shutterSpeed, smoothness, samples, imageAmount)
+
+  return {
+    gRed,
+    LERed,
+    gGreen,
+    LEGreen,
+    gBlue,
+    LEBlue
   }
 }
