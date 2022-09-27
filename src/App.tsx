@@ -1,7 +1,6 @@
 import { Greetings } from './components/Greetings'
 import React, { useEffect } from 'react'
-import { ConvertRawToRGB, HSLtoRGB, RGBToHSL } from './lib/BayerFilter'
-import { convertRGBToXYZ, convertXYZToRGB } from './lib/XYZ'
+import { ConvertRawToRGB } from './lib/BayerFilter'
 import { setSaturation } from './lib/Saturation'
 
 export const App: React.FC = () => {
@@ -35,26 +34,7 @@ export const App: React.FC = () => {
           // const data32 = new Uint8Array(imageData.data.buffer)
           // data32 är 4x sizen av data
           let k = 0
-          console.log(data[214], 'data 0')
-
           const rgb = ConvertRawToRGB(data, width, height)
-
-          // const xyz = convertRGBToXYZ(rgb, width, height)
-          // rgb = convertXYZToRGB(xyz, width, height)
-
-          // rgb.r.map((r, i) => {
-          //   const hsl = RGBToHSL({r, g: rgb.g[i], b: rgb.b[i]})
-          //   rgb.g[i] = hsl.s
-          //   rgb.b[i] = hsl.l
-          //   return hsl.h
-          // })
-
-          // rgb.r.map((r, i) => {
-          //   const rgbVal = HSLtoRGB({h: r, l: rgb.g[i], s: rgb.b[i]})
-          //   rgb.g[i] = rgbVal.g
-          //   rgb.b[i] = rgbVal.b
-          //   return rgbVal.r
-          // })
 
           // for (let i = 0; i < data.length; i += 1) {
           for (let i = 0; i < imageData.data.length; i += 4) {
