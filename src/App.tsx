@@ -56,6 +56,9 @@ export const App: React.FC = () => {
 
     window.Main.on('message', (message: Uint8Array[]) => {
       setStatus('Image data loaded')
+      // data is an array of 3 arrays with the RAW values
+      const data = message
+
       // const width = 2848
       // const height = 4256
 
@@ -63,7 +66,6 @@ export const App: React.FC = () => {
       const height = 4288
 
       if (canvasRef.current != null) {
-        const data = message
         console.log(data.length)
         setStatus('Images loaded: ' + String(data.length))
 
@@ -74,20 +76,22 @@ export const App: React.FC = () => {
         // const gMatrix = Matrix.zeros(rgbs[0].r.length, data.length)
         // const bMatrix = Matrix.zeros(rgbs[0].r.length, data.length)
         console.log('matrixes constructed')
-        // for (let i = 0; i < data.length; i++) {
-        //   console.log('inside loop', i)
-        //   console.log('rgb')
-        //   rMatrix.setColumn(i, rgbs[i].r)
-        //   gMatrix.setColumn(i, rgbs[i].g)
-        //   bMatrix.setColumn(i, rgbs[i].b)
-        // }
+        for (let i = 0; i < data.length; i++) {
+          console.log('inside loop', i)
+          console.log('rgb')
+          rMatrix.setColumn(i, rgbs[i].r)
+          // gMatrix.setColumn(i, rgbs[i].g)
+          // bMatrix.setColumn(i, rgbs[i].b)
+        }
 
         // console.log('rMatrix', rMatrix)
 
-        const shutterSpeeds = [1 / 800, 1 / 400, 1 / 100]
+        const shutterSpeeds = [Math.log(1 / 400), Math.log(1 / 125), Math.log(1 / 20)]
         const samples = 150
-        const resRed = gSolveOneChannel(rMatrix, shutterSpeeds, 1.0, samples, 3)
+        const smothness = 100
+        const resRed = gSolveOneChannel(rMatrix, shutterSpeeds, smothness, samples, 3)
         console.log(resRed)
+        setG(resRed.g)
         // const res = gsolveImage([rMatrix, gMatrix, bMatrix], shutterSpeeds, 1.0, samples, 3)
         // console.log(res)
 
