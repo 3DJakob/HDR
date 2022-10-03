@@ -31,8 +31,9 @@ export const readImage = (filename: string): any => {
   const data: Uint8Array = dcraw(buf, { verbose: true, deadpixels: true })
 
   const { width, height } = info
-  console.log(info, 'info')
-  console.log(data, 'data')
+  // console.log(info, 'info')
+  // console.log(data, 'data')
+  console.log('Image read: ' + filename)
 
   return data
   // display image data
