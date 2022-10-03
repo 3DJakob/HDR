@@ -17,9 +17,12 @@
   "dependencies": {
     "color-convert": "^2.0.1",
     "dcraw": "^1.0.3",
+    "jimp": "^0.16.2",
+    "ml-matrix": "^6.10.2",
     "react": "^18.2.0",
+    "react-charts": "^3.0.0-beta.50",
     "react-dom": "^18.2.0",
-    "react-hot-loader": "^4.13.0",
+    "react-image-parser": "^2.0.2",
     "styled-components": "^5.3.5"
   },
   "devDependencies": {
