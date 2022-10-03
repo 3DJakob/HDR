@@ -2,7 +2,7 @@ import dcraw from 'dcraw'
 import fs from 'fs'
 import { RawInfo } from './dcraw-types'
 
-export const readImage = (): any => {
+export const readImage = (filename: string): any => {
   // const buf = fs.readFileSync('./sample.CR3')
   // const info = dcraw(buf, { verbose: true, identify: true })
   // console.log(info)
@@ -17,7 +17,7 @@ export const readImage = (): any => {
   // }))
 
   // load raw image data
-  const buf = fs.readFileSync('./sample.ARW')
+  const buf = fs.readFileSync('./' + filename)
   // const data: Uint8Array = dcraw(buf, { verbose: true, deadpixels: true })
   // 12121105
   // 2832 * 4240 = 12007680
