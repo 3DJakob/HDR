@@ -1,9 +1,7 @@
-import { SVD } from 'svd-js'
 import { Matrix, solve } from 'ml-matrix'
 
 // https://www.npmjs.com/package/ml-matrix
 
-const matrix = Matrix.ones(5, 5)
 // const addition       = Matrix.add(A, B);
 // const multiplication = A.mmul(B);
 
@@ -49,9 +47,9 @@ interface image {
 
 const sampleImages: image[] = [
   {
-    r: [255, 255, 255, 255],
-    g: [255, 255, 255, 255],
-    b: [255, 255, 255, 255]
+    r: [200, 200, 200, 200],
+    g: [200, 200, 200, 200],
+    b: [200, 200, 200, 200]
   },
   {
     r: [100, 100, 100, 100],
@@ -59,13 +57,11 @@ const sampleImages: image[] = [
     b: [100, 100, 100, 100]
   },
   {
-    r: [0, 0, 0, 0],
-    g: [0, 0, 0, 0],
-    b: [0, 0, 0, 0]
+    r: [50, 50, 50, 50],
+    g: [50, 50, 50, 50],
+    b: [50, 50, 50, 50]
   }
 ]
-
-console.log(extractSampleValuesFromImages(sampleImages))
 
 export function extractSampleValuesFromImages (images: image[]): [Matrix, Matrix, Matrix] {
   const samples = 10
@@ -100,7 +96,7 @@ export const sampleChannels = extractSampleValuesFromImages(sampleImages)
 
 export function gSolveOneChannel (channel: Matrix, shutterSpeed: number[], smoothness: number, samples: number, imageAmount: number): {g: number[], LE: number[]} {
   const n = 255
-  console.log(samples * imageAmount + n + 1)
+  // console.log(samples * imageAmount + n + 1)
   const A = Matrix.zeros(samples * imageAmount + n + 1, n + samples)
   const b = Matrix.zeros(A.rows, 1)
 
@@ -108,15 +104,18 @@ export function gSolveOneChannel (channel: Matrix, shutterSpeed: number[], smoot
   let k = 0
   for (let i = 0; i < samples; i++) {
     for (let j = 0; j < imageAmount; j++) {
+      // console.log('to weight', Number(channel.get(i, j)))
       const wij = weight(Number(channel.get(i, j)) + 1)
       A.set(k, channel.get(i, j), wij)
       A.set(k, n + i, -wij)
-      b.set(k, 1, wij * shutterSpeed[j])
+      console.log('setting', wij * shutterSpeed[j])
+      b.set(k, 0, wij * shutterSpeed[j])
       k = k + 1
     }
   }
+
   // Fix the curve by setting its middle value to 0
-  A.set(k, 129, 1)
+  A.set(k, 128, 1)
   k = k + 1
 
   // Smoothness equation
@@ -129,11 +128,13 @@ export function gSolveOneChannel (channel: Matrix, shutterSpeed: number[], smoot
   }
 
   // Solve the system using SVD
-  const x = solve(A, b)
+  // Rows 405, Columns 1
+  const x = solve(A, b, true)
+
+  // A * x = b
 
   const g = x.getColumn(0).slice(0, n)
-  // g[0]
-  const LE = x.getColumn(0).slice(n, x.columns)
+  const LE = x.getColumn(0).slice(n, x.rows)
 
   return {
     g,
