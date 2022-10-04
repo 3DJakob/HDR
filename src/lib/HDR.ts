@@ -39,31 +39,31 @@ const sampleShutterSpeed = [
   1 / 6400
 ]
 
-interface image {
-  r: number[]
-  g: number[]
-  b: number[]
+export interface Image {
+  r: Uint8Array
+  g: Uint8Array
+  b: Uint8Array
 }
 
-const sampleImages: image[] = [
+const sampleImages: Image[] = [
   {
-    r: [200, 200, 200, 200],
-    g: [200, 200, 200, 200],
-    b: [200, 200, 200, 200]
+    r: Uint8Array.from([200, 200, 200, 200]),
+    g: Uint8Array.from([200, 200, 200, 200]),
+    b: Uint8Array.from([200, 200, 200, 200])
   },
   {
-    r: [100, 100, 100, 100],
-    g: [100, 100, 100, 100],
-    b: [100, 100, 100, 100]
+    r: Uint8Array.from([100, 100, 100, 100]),
+    g: Uint8Array.from([100, 100, 100, 100]),
+    b: Uint8Array.from([100, 100, 100, 100])
   },
   {
-    r: [50, 50, 50, 50],
-    g: [50, 50, 50, 50],
-    b: [50, 50, 50, 50]
+    r: Uint8Array.from([50, 50, 50, 50]),
+    g: Uint8Array.from([50, 50, 50, 50]),
+    b: Uint8Array.from([50, 50, 50, 50])
   }
 ]
 
-export function extractSampleValuesFromImages (images: image[]): [Matrix, Matrix, Matrix] {
+export function extractSampleValuesFromImages (images: Image[]): [Matrix, Matrix, Matrix] {
   const samples = 10
   const imageAmount = images.length
   const matrixR = Matrix.zeros(samples, imageAmount)
@@ -174,4 +174,48 @@ export function gsolveImage (
     gBlue,
     LEBlue
   }
+}
+
+export type image = [Matrix, Matrix, Matrix]
+
+export function tonemapping (
+  row: number,
+  col: number,
+  channels: Number,
+  numImages: Number,
+  images: image[],
+  radianceMaps: [Matrix, Matrix, Matrix],
+  shutterSpeed: number[]
+
+): void {
+  const d1 = Matrix.ones(row, col); const d2 = Matrix.ones(row, col); const d3 = Matrix.ones(row, col)
+  const n1 = Matrix.zeros(row, col); const n2 = Matrix.zeros(row, col); const n3 = Matrix.zeros(row, col)
+  const denominator = [d1, d2, d3]
+  const numerator = [n1, n2, n3]
+
+  const finalImages: [number[], number[], number[]] = [[], [], []]
+
+  for (let i = 0; i < numImages; i++) {
+    const zij = images[i] // var of type Image
+    const g_zij = zij // var of type Image
+    for (let c = 0; c < channels; c++) {
+      g_zij[c] = radianceMaps[c].mmul(zij[c])
+      g_zij[c] = g_zij[c].sub(shutterSpeed[i])
+
+      // apply weight
+      // zij[c] = new Matrix([zij[c].to1DArray().map(val => weight(val))])
+      const gZIJArr = g_zij[c].to1DArray()
+      const arr = zij[c].to1DArray().map(val => weight(val))
+      const mult = arr.map((z, i) => z * gZIJArr[i])
+      finalImages[c] = (numerator[c].to1DArray().map((val, i) => val + mult[i])).map((val, i) => val / denominator[c].getColumn(i)[0])
+
+      // numerator[c] = numerator[c].add(zij[c].mmul(g_zij[c].transpose()))
+    }
+  }
+  //     numerator = numerator + wij.*g_zij;
+  //     denominator = denominator + wij;
+  // end
+
+  // % Natural logarithm of radiance values of image.
+  // final_image = numerator ./ denominator;
 }
