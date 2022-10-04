@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { convertRawToRGB } from '../src/lib/BayerFilter'
-import { setSaturation } from '../src/lib/Saturation'
+import { setSaturationImage, setSaturationPixel } from '../src/lib/Saturation'
 import { saveImage } from './jimp'
 import { readImage } from './raw'
 
@@ -43,6 +43,7 @@ async function registerListeners (): Promise<void> {
     let imageData3 = null
     let rgb: {r: Uint8Array, g: Uint8Array, b: Uint8Array}
     let rgbSat: {r: number, g: number, b: number}
+    let imagesRAW = []
 
     switch (message) {
       case 'generateHDR':
@@ -50,18 +51,15 @@ async function registerListeners (): Promise<void> {
         imageData2 = readImage('2.arw')
         imageData3 = readImage('3.arw')
 
-        mainWindow?.webContents.send('message', [imageData1, imageData2, imageData3])
+        imagesRAW = [imageData1, imageData2, imageData3]
 
+        // mainWindow?.webContents.send('message', [imageData1, imageData2, imageData3])
         // mainWindow?.webContents.send('message', imageData)
-        // const rgbSat = setSaturation({ r: rgb.r[i], g: rgb.g[i], b: rgb.b[i] }, 2.5)
-        // rgb = convertRawToRGB(imageData, 2848, 4288)
-        // for (let i = 0; i < rgb.r.length; i++) {
-        //   rgbSat = setSaturation({ r: rgb.r[i], g: rgb.g[i], b: rgb.b[i] }, 2.5)
-        //   rgb.r[i] = rgbSat.r > 255 ? 255 : rgbSat.r
-        //   rgb.g[i] = rgbSat.g > 255 ? 255 : rgbSat.g
-        //   rgb.b[i] = rgbSat.b > 255 ? 255 : rgbSat.b
-        // }
-        // saveImage(rgb, 2848, 4288)
+
+        for (let i = 0; i < 3; i++) {
+          const rgb = convertRawToRGB(imagesRAW[i], 2848, 4288)
+          saveImage(setSaturationImage(rgb), 2848, 4288, `image${i}.jpg`)
+        }
         break
       case 'saveImage':
         // saveImage(sampleImageData)

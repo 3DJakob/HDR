@@ -1,4 +1,5 @@
 import Jimp from 'jimp'
+import { Image } from '../src/lib/HDR'
 
 export const sampleImageData = [
   [0xFF0000FF, 0xFF0000FF, 0xFF0000FF],
@@ -24,7 +25,7 @@ export function reshapeArrayToImage (array: number[], width: number, height: num
   return out
 }
 
-export function saveImage (imageData: {r: Uint8Array, g: Uint8Array, b: Uint8Array}, width: number, height: number): void {
+export function saveImage (imageData: Image, width: number, height: number, filename: string): void {
   // console.warn(imageData.length, imageData[0].length)
   const image = new Jimp(width, height, function (err, image) {
     if (err != null) throw err
@@ -42,7 +43,7 @@ export function saveImage (imageData: {r: Uint8Array, g: Uint8Array, b: Uint8Arr
     //   // })
     // })
 
-    image.write('test.png', (err) => {
+    image.write(filename, (err) => {
       if (err != null) throw err
     })
   })
