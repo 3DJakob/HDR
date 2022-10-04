@@ -1,4 +1,6 @@
-export const convertRawToRGB = (raw: Uint8Array, width: number, height: number): {r: Uint8Array, g: Uint8Array, b: Uint8Array} => {
+import { Image } from './HDR'
+
+export const convertRawToRGB = (raw: Uint8Array, width: number, height: number): Image => {
   const r = new Uint8Array(width * height)
   const g = new Uint8Array(width * height)
   const b = new Uint8Array(width * height)
