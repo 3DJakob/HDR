@@ -43,23 +43,31 @@ export interface Image {
   r: Uint8Array
   g: Uint8Array
   b: Uint8Array
+  width: number
+  height: number
 }
 
 const sampleImages: Image[] = [
   {
     r: Uint8Array.from([200, 200, 200, 200]),
     g: Uint8Array.from([200, 200, 200, 200]),
-    b: Uint8Array.from([200, 200, 200, 200])
+    b: Uint8Array.from([200, 200, 200, 200]),
+    width: 2,
+    height: 2
   },
   {
     r: Uint8Array.from([100, 100, 100, 100]),
     g: Uint8Array.from([100, 100, 100, 100]),
-    b: Uint8Array.from([100, 100, 100, 100])
+    b: Uint8Array.from([100, 100, 100, 100]),
+    width: 2,
+    height: 2
   },
   {
     r: Uint8Array.from([50, 50, 50, 50]),
     g: Uint8Array.from([50, 50, 50, 50]),
-    b: Uint8Array.from([50, 50, 50, 50])
+    b: Uint8Array.from([50, 50, 50, 50]),
+    width: 2,
+    height: 2
   }
 ]
 

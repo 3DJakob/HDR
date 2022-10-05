@@ -17,6 +17,7 @@
   "dependencies": {
     "color-convert": "^2.0.1",
     "dcraw": "^1.0.3",
+    "get-pixels": "^3.3.3",
     "jimp": "^0.16.2",
     "ml-matrix": "^6.10.2",
     "react": "^18.2.0",
@@ -42,6 +43,7 @@
     "@testing-library/react": "^13.3.0",
     "@types/color-convert": "^2.0.0",
     "@types/electron-devtools-installer": "^2.2.2",
+    "@types/get-pixels": "^3.3.2",
     "@types/jest": "^28.1.5",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
