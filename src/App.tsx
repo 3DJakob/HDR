@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react'
-import { extractSampleValuesFromImages, gsolveImage, Image, sampleChannels } from './lib/HDR'
+import { extractSampleValuesFromImages, getActualRadiance, gsolveImage, Image, sampleChannels } from './lib/HDR'
 import { GlobalStyle } from './styles/GlobalStyle'
 import CanvasImage from './components/CanvasImage'
+import Matrix from 'ml-matrix'
+import { ArrayToMatrix } from './lib/ArrayToMatrix'
 let appInitialized = false
 
 export const App: React.FC = () => {
@@ -24,6 +26,22 @@ export const App: React.FC = () => {
       const shutterSpeeds = [Math.log(1 / 400), Math.log(1 / 125), Math.log(1 / 20)]
       const g = gsolveImage(samples, shutterSpeeds, 100, 10, samples.length)
       console.log(g, 'g')
+
+      const bMatrix = ArrayToMatrix(data[0].b, data[0].width, data[0].height)
+      const gMatrix = ArrayToMatrix(data[1].g, data[1].width, data[1].height)
+      const rMatrix = ArrayToMatrix(data[2].r, data[2].width, data[2].height)
+      const matrixImages: [Matrix, Matrix, Matrix] = [bMatrix, gMatrix, rMatrix]
+
+      const radianceMaps: [Matrix, Matrix, Matrix] = [
+        new Matrix([g.gRed]),
+        new Matrix([g.gGreen]),
+        new Matrix([g.gBlue])
+      ]
+
+      // console.log(radianceMaps[0].get(0, 10))
+
+      const foo = getActualRadiance(data[0].width, data[0].height, 3, data.length, matrixImages, radianceMaps, shutterSpeeds)
+      console.log(foo)
       // setRGBImagesData(data)
     })
 
