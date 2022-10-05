@@ -51,3 +51,28 @@ export const readImage = (filename: string): any => {
   // ctx.putImageData(imageData, 0, 0)
   // document.body.appendChild(canvas)
 }
+
+export const convertRAWtoTIFF = (filename: string, outputFilename: string): any => {
+  const buf = fs.readFileSync('./' + filename)
+  console.log('image loaded...')
+  // const tiffFile = dcraw(buf, { verbose: true, deadpixels: true, output: 'tiff' })
+  const tiffFile = dcraw(buf, { exportAsTiff: true })
+  console.log('Image converted to TIFF: ' + filename)
+  fs.writeFileSync(outputFilename, tiffFile)
+}
+
+export const readImageAsRGB = (filename: string): any => {
+  // setFourColorMode
+
+  const buf = fs.readFileSync('./' + filename)
+  // const data = dcraw(buf, { use16BitMode: true })
+  const data = dcraw(buf, { })
+  // 2848 × 4256 = 12121088
+  // 72726547
+  // 36363281
+
+  // const data = dcraw(buf, { setColorSpace: 2 })
+  // Uint8Array(12121105)
+  // 24242195
+  console.log(data)
+}

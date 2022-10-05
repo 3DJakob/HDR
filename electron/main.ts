@@ -1,8 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { convertRawToRGB } from '../src/lib/BayerFilter'
-import { setSaturationImage, setSaturationPixel } from '../src/lib/Saturation'
-import { saveImage } from './jimp'
-import { readImage } from './raw'
+import { readImage, readImageAsRGB } from './raw'
+import { loadPNG } from './png'
+// import nd from 'ndarray'
 
 let mainWindow: BrowserWindow | null
 
@@ -33,36 +32,48 @@ function createWindow (): void {
   })
 }
 
+const sendPNGImages = async (): Promise<void> => {
+  const img1 = await loadPNG('01low.png')
+  const img2 = await loadPNG('02low.png')
+  const img3 = await loadPNG('03low.png')
+  mainWindow?.webContents.send('message', [img1, img2, img3])
+}
+
 async function registerListeners (): Promise<void> {
   /**
    * This comes from bridge integration, check bridge.ts
    */
   ipcMain.on('message', (_, message) => {
-    let imageData1 = null
-    let imageData2 = null
-    let imageData3 = null
-    let rgb: {r: Uint8Array, g: Uint8Array, b: Uint8Array}
-    let rgbSat: {r: number, g: number, b: number}
+    let imageData1: Uint8Array = new Uint8Array()
+    let imageData2: Uint8Array = new Uint8Array()
+    let imageData3: Uint8Array = new Uint8Array()
     let imagesRAW = []
 
     switch (message) {
-      case 'generateHDR':
+      case 'loadRAWImages':
         imageData1 = readImage('1.arw')
         imageData2 = readImage('2.arw')
         imageData3 = readImage('3.arw')
 
         imagesRAW = [imageData1, imageData2, imageData3]
-
-        // mainWindow?.webContents.send('message', [imageData1, imageData2, imageData3])
-        // mainWindow?.webContents.send('message', imageData)
-
-        for (let i = 0; i < 3; i++) {
-          const rgb = convertRawToRGB(imagesRAW[i], 2848, 4288)
-          saveImage(setSaturationImage(rgb), 2848, 4288, `image${i}.jpg`)
-        }
+        console.log('imported!')
+        mainWindow?.webContents.send('message', imagesRAW)
+        break
+      case 'readPixels':
+        console.log('readPixels')
+        break
+      case 'loadPNGImages':
+        sendPNGImages().catch(console.error)
         break
       case 'saveImage':
         // saveImage(sampleImageData)
+        // console.log('saveImage')
+        // convertRAWtoTIFF('1.arw', '1.tiff')
+        // convertRAWtoTIFF('2.arw', '2.tiff')
+        // convertRAWtoTIFF('3.arw', '3.tiff')
+
+        readImageAsRGB('1.arw')
+
         break
     }
   })
