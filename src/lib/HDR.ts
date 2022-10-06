@@ -116,7 +116,7 @@ export function gSolveOneChannel (channel: Matrix, shutterSpeed: number[], smoot
       const wij = weight(Number(channel.get(i, j)) + 1)
       A.set(k, channel.get(i, j), wij)
       A.set(k, n + i, -wij)
-      console.log('setting', wij * shutterSpeed[j])
+      // console.log('setting', wij * shutterSpeed[j])
       b.set(k, 0, wij * shutterSpeed[j])
       k = k + 1
     }
@@ -184,46 +184,85 @@ export function gsolveImage (
   }
 }
 
-export type image = [Matrix, Matrix, Matrix]
+// export type image = [Matrix, Matrix, Matrix]
 
-export function tonemapping (
+export function getActualRadiance (
   row: number,
   col: number,
   channels: Number,
   numImages: Number,
-  images: image[],
+  images: [Matrix, Matrix, Matrix],
   radianceMaps: [Matrix, Matrix, Matrix],
   shutterSpeed: number[]
 
-): void {
-  const d1 = Matrix.ones(row, col); const d2 = Matrix.ones(row, col); const d3 = Matrix.ones(row, col)
-  const n1 = Matrix.zeros(row, col); const n2 = Matrix.zeros(row, col); const n3 = Matrix.zeros(row, col)
-  const denominator = [d1, d2, d3]
-  const numerator = [n1, n2, n3]
+): Matrix[] {
+  const d = Matrix.ones(row, col)
+  const n = Matrix.zeros(row, col)
+  const denominator = [d, d, d]
+  const numerator = [n, n, n]
 
-  const finalImages: [number[], number[], number[]] = [[], [], []]
+  const finalImages = [new Matrix(row, col), new Matrix(row, col), new Matrix(row, col)]
 
   for (let i = 0; i < numImages; i++) {
     const zij = images[i] // var of type Image
-    const g_zij = zij // var of type Image
+    // const gZij = zij // var of type Image
+
+    // gZij[c] = (zij[c]).to1DArray().map((pixel) => radianceMaps[c].getColumn(pixel))
+    // gZij[c] = gZij[c].sub(shutterSpeed[i])
+    console.log(radianceMaps)
+    let numberOfLogs = 0
     for (let c = 0; c < channels; c++) {
-      g_zij[c] = radianceMaps[c].mmul(zij[c])
-      g_zij[c] = g_zij[c].sub(shutterSpeed[i])
+      for (let r = 0; r < row; r++) {
+        for (let j = 0; j < col; j++) {
+          zij.set(
+            r,
+            j,
+            radianceMaps[c].get(0, zij.get(r, j)) - shutterSpeed[i]
+          )
+
+          // check if nan
+          if (isNaN(radianceMaps[c].get(0, zij.get(r, j))) && numberOfLogs < 10) {
+            console.log('nan', zij.get(r, j))
+            numberOfLogs++
+          }
+
+          // apply weight
+          // zij.set(
+          //   r,
+          //   j,
+          //   weight(zij.get(r, j))
+          // )
+          // console.log(r, j, numerator[i].get(r, j) + weight(zij.get(r, j)) * zij.get(r, j))
+          numerator[i].set(r, j, numerator[i].get(r, j) + weight(zij.get(r, j)) * zij.get(r, j))
+
+          denominator[i].set(r, j, denominator[i].get(r, j) + weight(zij.get(r, j)))
+
+          finalImages[i].set(r, j, numerator[i].get(r, j) / (denominator[i].get(r, j) + 1))
+        }
+      }
 
       // apply weight
       // zij[c] = new Matrix([zij[c].to1DArray().map(val => weight(val))])
-      const gZIJArr = g_zij[c].to1DArray()
-      const arr = zij[c].to1DArray().map(val => weight(val))
-      const mult = arr.map((z, i) => z * gZIJArr[i])
-      finalImages[c] = (numerator[c].to1DArray().map((val, i) => val + mult[i])).map((val, i) => val / denominator[c].getColumn(i)[0])
+      // const gZijArray = gZij[c].to1DArray()
+      // const arr = zij[c].to1DArray().map(val => weight(val))
+      // const mult = arr.map((z, i) => z * gZijArray[i])
+      // finalImages[c] = (numerator[c].to1DArray().map((val, i) => val + mult[i])).map((val, i) => val / denominator[c].getColumn(i)[0])
 
       // numerator[c] = numerator[c].add(zij[c].mmul(g_zij[c].transpose()))
     }
   }
-  //     numerator = numerator + wij.*g_zij;
-  //     denominator = denominator + wij;
-  // end
+  return finalImages
+}
 
-  // % Natural logarithm of radiance values of image.
-  // final_image = numerator ./ denominator;
+export function ToneMapping (
+  finalImage: [Matrix, Matrix, Matrix],
+  channels: number
+): void {
+  for (let c = 0; c < channels; c++) {
+    const mat = finalImage[c]
+    const channelMax = Math.max(...mat.to1DArray())
+    const channelMin = Math.min(...mat.to1DArray())
+
+    finalImage[c] = Matrix.div(finalImage[c].add(Math.abs(channelMin)), (channelMax + Math.abs(channelMin)))
+  }
 }
