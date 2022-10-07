@@ -186,20 +186,31 @@ export function gsolveImage (
 
 // export type image = [Matrix, Matrix, Matrix]
 
-export function getActualRadiance (
-  row: number,
-  col: number,
-  channels: number,
-  numImages: number,
-  images: [Matrix, Matrix, Matrix],
-  radianceMaps: [Matrix, Matrix, Matrix],
-  shutterSpeed: number[]
-
+ //Image
   //      firrst pixel ................... last pixel
   // r        55                             24     
   // g        222                            45
   // b        54                             200
 
+  // RadianceMap -> one channel
+  //          firrst image ................... last image
+  // sample1       23                             45   
+  // sample2       68                             90   
+  //.
+  //.
+  //.
+  // sample_last   111                             125
+    
+export function getActualRadiance (
+  row: number,
+  col: number,
+  channels: number,
+  numImages: number,
+  images: Matrix[],
+  radianceMaps: [Matrix, Matrix, Matrix],
+  shutterSpeed: number[]
+
+ 
 ): Matrix {
   let denominator = Matrix.zeros(channels, (row*col))
   let numerator = Matrix.zeros(channels, (row*col))
