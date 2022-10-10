@@ -186,21 +186,21 @@ export function gsolveImage (
 
 // export type image = [Matrix, Matrix, Matrix]
 
- //Image
-  //      firrst pixel ................... last pixel
-  // r        55                             24     
-  // g        222                            45
-  // b        54                             200
+// Image
+//      firrst pixel ................... last pixel
+// r        55                             24
+// g        222                            45
+// b        54                             200
 
-  // RadianceMap -> one channel
-  //          firrst image ................... last image
-  // sample1       23                             45   
-  // sample2       68                             90   
-  //.
-  //.
-  //.
-  // sample_last   111                             125
-    
+// RadianceMap -> one channel
+//          firrst image ................... last image
+// sample1       23                             45
+// sample2       68                             90
+// .
+// .
+// .
+// sample_last   111                             125
+
 export function getActualRadiance (
   row: number,
   col: number,
@@ -209,75 +209,69 @@ export function getActualRadiance (
   images: Matrix[],
   radianceMaps: [Matrix, Matrix, Matrix],
   shutterSpeed: number[]
-
- 
 ): Matrix {
-  let denominator = Matrix.zeros(channels, (row*col))
-  let numerator = Matrix.zeros(channels, (row*col))
-  const arImage = new Matrix(channels, row*col)
+  let denominator = Matrix.zeros(channels, (row * col))
+  let numerator = Matrix.zeros(channels, (row * col))
+  const arImage = new Matrix(channels, row * col)
 
   for (let i = 0; i < numImages; i++) { // 1
     const zij = images[i] // 2
-    const wij = Matrix.zeros(channels,(row*col))
+    const wij = Matrix.zeros(channels, (row * col))
 
     // gZij[c] = (zij[c]).to1DArray().map((pixel) => radianceMaps[c].getColumn(pixel))
     // gZij[c] = gZij[c].sub(shutterSpeed[i])
-    
-    let numberOfLogs = 0
-    let gZij = Matrix.zeros(channels, (row*col))
+
+    const numberOfLogs = 0
+    let gZij = Matrix.zeros(channels, (row * col))
 
     for (let channel = 0; channel < channels; channel++) { // 3
-              gZij.setRow(channel, radianceMaps[channel].sub(shutterSpeed[i])) // 4
-          }
+      gZij.setRow(channel, radianceMaps[channel].sub(shutterSpeed[i])) // 4
+    }
 
-    gZij = gZij.sub(shutterSpeed[i]) //5
+    gZij = gZij.sub(shutterSpeed[i]) // 5
 
     // apply weight
     for (let channel = 0; channel < channels; channel++) {
-      for (let pixel = 0; pixel < (row*col); pixel++) { 
-          wij.set(channel, pixel, weight(zij.get(channel,pixel))) //6   
+      for (let pixel = 0; pixel < (row * col); pixel++) {
+        wij.set(channel, pixel, weight(zij.get(channel, pixel))) // 6
       }
-    
     }
-    numerator = numerator.add(wij.mul(zij))  //7
-    denominator = denominator.add(wij) //8
+    numerator = numerator.add(wij.mul(zij)) // 7
+    denominator = denominator.add(wij) // 8
   }
-   // arImage = numerator.div(denominator) 
-   //elementwise matrix division
-    for (let channel = 0; channel < channels; channel++) {
-      for (let pixel = 0; pixel < (row*col); pixel++) {
-        arImage.set(channel, pixel, numerator.get(channel, pixel) / denominator.get(channel, pixel)) //9
-      }
+  // arImage = numerator.div(denominator)
+  // elementwise matrix division
+  for (let channel = 0; channel < channels; channel++) {
+    for (let pixel = 0; pixel < (row * col); pixel++) {
+      arImage.set(channel, pixel, numerator.get(channel, pixel) / denominator.get(channel, pixel)) // 9
     }
+  }
 
   return arImage
 }
 
+// // check if nan
+// if (isNaN(radianceMaps[c].get(0, zij.get(r, j))) && numberOfLogs < 10) {
+//   console.log('nan', zij.get(r, j))
+//   numberOfLogs++
+// }
 
- // // check if nan
-          // if (isNaN(radianceMaps[c].get(0, zij.get(r, j))) && numberOfLogs < 10) {
-          //   console.log('nan', zij.get(r, j))
-          //   numberOfLogs++
-          // }
+// apply weight
+// zij.set(
+//   r,
+//   j,
+//   weight(zij.get(r, j))
+// )
+// console.log(r, j, numerator[i].get(r, j) + weight(zij.get(r, j)) * zij.get(r, j))
 
-          // apply weight
-          // zij.set(
-          //   r,
-          //   j,
-          //   weight(zij.get(r, j))
-          // )
-          // console.log(r, j, numerator[i].get(r, j) + weight(zij.get(r, j)) * zij.get(r, j))
+// apply weight
+// zij[c] = new Matrix([zij[c].to1DArray().map(val => weight(val))])
+// const gZijArray = gZij[c].to1DArray()
+// const arr = zij[c].to1DArray().map(val => weight(val))
+// const mult = arr.map((z, i) => z * gZijArray[i])
+// finalImages[c] = (numerator[c].to1DArray().map((val, i) => val + mult[i])).map((val, i) => val / denominator[c].getColumn(i)[0])
 
-
-
-  // apply weight
-      // zij[c] = new Matrix([zij[c].to1DArray().map(val => weight(val))])
-      // const gZijArray = gZij[c].to1DArray()
-      // const arr = zij[c].to1DArray().map(val => weight(val))
-      // const mult = arr.map((z, i) => z * gZijArray[i])
-      // finalImages[c] = (numerator[c].to1DArray().map((val, i) => val + mult[i])).map((val, i) => val / denominator[c].getColumn(i)[0])
-
-      // numerator[c] = numerator[c].add(zij[c].mmul(g_zij[c].transpose()))
+// numerator[c] = numerator[c].add(zij[c].mmul(g_zij[c].transpose()))
 
 export function ToneMapping (
   img: [Matrix, Matrix, Matrix],
