@@ -47,4 +47,5 @@ export function saveImage (imageData: Image, width: number, height: number, file
       if (err != null) throw err
     })
   })
+  console.log('Saved image ' + filename)
 }

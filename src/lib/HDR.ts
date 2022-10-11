@@ -1,4 +1,5 @@
 import { Matrix, solve } from 'ml-matrix'
+import { ArrayToMatrix } from './ArrayToMatrix'
 
 export function weight (x: number): number {
   let out = 0
@@ -216,4 +217,43 @@ export function ToneMapping (
     })
   }
   return img
+}
+
+export function HDRMerge (images: [Image, Image, Image]): Image {
+  const samples = extractSampleValuesFromImages(images)
+  const shutterSpeeds = [Math.log(1 / 400), Math.log(1 / 125), Math.log(1 / 20)]
+  const g = gsolveImage(samples, shutterSpeeds, 100, 10, samples.length)
+
+  const r1Matrix = ArrayToMatrix(images[0].r, images[0].width, images[0].height)
+  const r2Matrix = ArrayToMatrix(images[1].r, images[1].width, images[1].height)
+  const r3Matrix = ArrayToMatrix(images[2].r, images[2].width, images[2].height)
+
+  const b1Matrix = ArrayToMatrix(images[0].b, images[0].width, images[0].height)
+  const b2Matrix = ArrayToMatrix(images[1].b, images[1].width, images[1].height)
+  const b3Matrix = ArrayToMatrix(images[2].b, images[2].width, images[2].height)
+
+  const g1Matrix = ArrayToMatrix(images[0].g, images[0].width, images[0].height)
+  const g2Matrix = ArrayToMatrix(images[1].g, images[1].width, images[1].height)
+  const g3Matrix = ArrayToMatrix(images[2].g, images[2].width, images[2].height)
+
+  const radianceMaps: [Matrix, Matrix, Matrix] = [
+    new Matrix([g.gRed]),
+    new Matrix([g.gGreen]),
+    new Matrix([g.gBlue])
+  ]
+
+  const red = getActualRadiance([r1Matrix, r2Matrix, r3Matrix], radianceMaps, shutterSpeeds)
+  const blue = getActualRadiance([b1Matrix, b2Matrix, b3Matrix], radianceMaps, shutterSpeeds)
+  const green = getActualRadiance([g1Matrix, g2Matrix, g3Matrix], radianceMaps, shutterSpeeds)
+
+  const img = ToneMapping([red, green, blue])
+
+  const image: Image = {
+    r: new Uint8Array(img[0].to1DArray()),
+    g: new Uint8Array(img[1].to1DArray()),
+    b: new Uint8Array(img[2].to1DArray()),
+    width: images[0].width,
+    height: images[0].height
+  }
+  return image
 }
