@@ -229,8 +229,6 @@ export function getActualRadiance (
   for (let i = 0; i < numImages; i++) { // 3
     const zij = images[i] // 2
     // gZij.setRow(channel, radianceMaps[channel].sub(shutterSpeed[i])) // 4
-
-    console.log(radianceMaps[0], 'foo')
     for (let column = 0; column < columns; column++) {
       for (let row = 0; row < rows; row++) {
         gZij[i].set(
@@ -312,14 +310,17 @@ export function getActualRadiance (
 // numerator[c] = numerator[c].add(zij[c].mmul(g_zij[c].transpose()))
 
 export function ToneMapping (
-  img: [Matrix, Matrix, Matrix],
-  channels: number
-): void {
-  for (let c = 0; c < channels; c++) {
+  img: [Matrix, Matrix, Matrix]
+): [Matrix, Matrix, Matrix] {
+  for (let c = 0; c < 3; c++) {
     const mat = img[c]
-    const channelMax = Math.max(...mat.to1DArray())
-    const channelMin = Math.min(...mat.to1DArray())
 
-    img[c] = Matrix.div(img[c].add(Math.abs(channelMin)), (channelMax + Math.abs(channelMin)))
+    const channelMax = mat.max()
+    const channelMin = mat.min()
+    img[c].apply((row, col) => {
+      const val = mat.get(row, col)
+      mat.set(row, col, (val + channelMin) / (channelMax + channelMin) * 255)
+    })
   }
+  return img
 }
