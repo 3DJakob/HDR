@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { readImage, readImageAsRGB } from './raw'
 import { loadPNG } from './png'
 import { saveImage } from './jimp'
-import { Image } from '../src/lib/HDR'
+import { HDRMerge, Image } from '../src/lib/HDR'
 // import nd from 'ndarray'
 
 let mainWindow: BrowserWindow | null
@@ -34,11 +34,14 @@ function createWindow (): void {
   })
 }
 
-const sendPNGImages = async (): Promise<void> => {
-  const img1 = await loadPNG('01low.png')
-  const img2 = await loadPNG('02low.png')
-  const img3 = await loadPNG('03low.png')
-  mainWindow?.webContents.send('message', [img1, img2, img3])
+const convertPNGsToHDRPNG = async (): Promise<void> => {
+  const img1 = await loadPNG('01lowml.png')
+  const img2 = await loadPNG('02lowml.png')
+  const img3 = await loadPNG('03lowml.png')
+  // mainWindow?.webContents.send('message', [img1, img2, img3])
+  const img = HDRMerge([img1, img2, img3])
+  saveImage(img, img.width, img.height, 'test.png')
+  mainWindow?.webContents.send('HDRCreated', 'test.png')
 }
 
 async function registerListeners (): Promise<void> {
@@ -64,8 +67,8 @@ async function registerListeners (): Promise<void> {
       case 'readPixels':
         console.log('readPixels')
         break
-      case 'loadPNGImages':
-        sendPNGImages().catch(console.error)
+      case 'createHDR':
+        convertPNGsToHDRPNG().catch(console.error)
         break
       case 'saveImage':
         // saveImage(sampleImageData)
