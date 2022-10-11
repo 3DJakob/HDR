@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { extractSampleValuesFromImages, getActualRadiance, gsolveImage, Image, sampleChannels } from './lib/HDR'
+import { extractSampleValuesFromImages, getActualRadiance, gsolveImage, Image, sampleChannels, ToneMapping } from './lib/HDR'
 import { GlobalStyle } from './styles/GlobalStyle'
 import CanvasImage from './components/CanvasImage'
 import Matrix from 'ml-matrix'
@@ -52,20 +52,18 @@ export const App: React.FC = () => {
       const blue = getActualRadiance([b1Matrix, b2Matrix, b3Matrix], radianceMaps, shutterSpeeds)
       const green = getActualRadiance([g1Matrix, g2Matrix, g3Matrix], radianceMaps, shutterSpeeds)
 
+      const img = ToneMapping([red, green, blue])
+
       const image: Image = {
-        r: new Uint8Array(red.to1DArray()),
-        g: new Uint8Array(green.to1DArray()),
-        b: new Uint8Array(blue.to1DArray()),
+        r: new Uint8Array(img[0].to1DArray()),
+        g: new Uint8Array(img[1].to1DArray()),
+        b: new Uint8Array(img[2].to1DArray()),
         width: data[0].width,
         height: data[0].height
       }
 
       // Send image to server
       window.Main.sendImage(JSON.stringify(image))
-      // saveImage(image, image.width, image.height, 'test.jpg')
-
-      // console.log(foo, 'THE ACTUAL RADIANCE')
-      // setRGBImagesData(data)
     })
 
     appInitialized = true
