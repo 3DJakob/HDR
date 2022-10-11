@@ -186,6 +186,10 @@ export function gsolveImage (
 
 // export type image = [Matrix, Matrix, Matrix]
 
+// ImageR
+// 1 2 3 4
+// 5 6 7 8
+
 // Image
 //      firrst pixel ................... last pixel
 // r        55                             24
@@ -202,48 +206,82 @@ export function gsolveImage (
 // sample_last   111                             125
 
 export function getActualRadiance (
-  row: number,
-  col: number,
-  channels: number,
-  numImages: number,
   images: Matrix[],
   radianceMaps: [Matrix, Matrix, Matrix],
   shutterSpeed: number[]
 ): Matrix {
-  let denominator = Matrix.zeros(channels, (row * col))
-  let numerator = Matrix.zeros(channels, (row * col))
-  const arImage = new Matrix(channels, row * col)
+  const rows = images[0].rows
+  const columns = images[0].columns
+  const numImages = images.length
+  // const channels = 3
 
-  for (let i = 0; i < numImages; i++) { // 1
+  const denominator = Matrix.zeros(rows, columns)
+  const numerator = Matrix.zeros(rows, columns)
+  const arImage = Matrix.zeros(rows, columns)
+
+  // for (let i = 0; i < numImages; i++) { // 1
+
+  const wij = [Matrix.zeros(rows, columns), Matrix.zeros(rows, columns), Matrix.zeros(rows, columns)] // 3
+
+  let numberOfLogs = 0
+  const gZij = [Matrix.zeros(rows, columns), Matrix.zeros(rows, columns), Matrix.zeros(rows, columns)]
+
+  for (let i = 0; i < numImages; i++) { // 3
     const zij = images[i] // 2
-    const wij = Matrix.zeros(channels, (row * col))
+    // gZij.setRow(channel, radianceMaps[channel].sub(shutterSpeed[i])) // 4
 
-    // gZij[c] = (zij[c]).to1DArray().map((pixel) => radianceMaps[c].getColumn(pixel))
-    // gZij[c] = gZij[c].sub(shutterSpeed[i])
-
-    const numberOfLogs = 0
-    let gZij = Matrix.zeros(channels, (row * col))
-
-    for (let channel = 0; channel < channels; channel++) { // 3
-      gZij.setRow(channel, radianceMaps[channel].sub(shutterSpeed[i])) // 4
-    }
-
-    gZij = gZij.sub(shutterSpeed[i]) // 5
-
-    // apply weight
-    for (let channel = 0; channel < channels; channel++) {
-      for (let pixel = 0; pixel < (row * col); pixel++) {
-        wij.set(channel, pixel, weight(zij.get(channel, pixel))) // 6
+    console.log(radianceMaps[0], 'foo')
+    for (let column = 0; column < columns; column++) {
+      for (let row = 0; row < rows; row++) {
+        gZij[i].set(
+          row,
+          column,
+          radianceMaps[i].get(0, images[i].get(row, column)) - shutterSpeed[i]
+        ) // 4
       }
     }
-    numerator = numerator.add(wij.mul(zij)) // 7
-    denominator = denominator.add(wij) // 8
   }
+
+  // gZij = gZij.sub(shutterSpeed[i]) // 5
+
+  // apply weight
+  for (let channel = 0; channel < numImages; channel++) {
+    for (let column = 0; column < columns; column++) {
+      for (let row = 0; row < rows; row++) {
+        wij[channel].set(row, column, weight(images[channel].get(row, column))) // 6
+      }
+    }
+  }
+  // numerator = numerator.add(wij.mul(zij)) // 7
+
+  for (let channel = 0; channel < numImages; channel++) {
+    for (let column = 0; column < columns; column++) {
+      for (let row = 0; row < rows; row++) {
+        // numerator[i].set(r, j, numerator[i].get(r, j) + weight(zij.get(r, j)) * zij.get(r, j))
+        numerator.set(row, column, numerator.get(row, column) + wij[channel].get(row, column) * images[channel].get(row, column))
+      }
+    }
+  }
+
+  for (let channel = 0; channel < numImages; channel++) {
+    denominator.add(wij[channel]) // 8
+  }
+  // }
   // arImage = numerator.div(denominator)
   // elementwise matrix division
-  for (let channel = 0; channel < channels; channel++) {
-    for (let pixel = 0; pixel < (row * col); pixel++) {
-      arImage.set(channel, pixel, numerator.get(channel, pixel) / denominator.get(channel, pixel)) // 9
+
+  denominator.add(1)
+
+  for (let column = 0; column < columns; column++) {
+    for (let row = 0; row < rows; row++) {
+      const newVal = numerator.get(row, column) / denominator.get(row, column)
+      if (numberOfLogs < 10) {
+        if (isNaN(newVal)) {
+          console.warn('NaNs found in result!')
+          numberOfLogs++
+        }
+      }
+      arImage.set(row, column, newVal) // 9
     }
   }
 

@@ -27,10 +27,10 @@ export const App: React.FC = () => {
       const g = gsolveImage(samples, shutterSpeeds, 100, 10, samples.length)
       console.log(g, 'g')
 
-      const bMatrix = ArrayToMatrix(data[0].b, data[0].width, data[0].height)
-      const gMatrix = ArrayToMatrix(data[1].g, data[1].width, data[1].height)
-      const rMatrix = ArrayToMatrix(data[2].r, data[2].width, data[2].height)
-      const matrixImages: [Matrix, Matrix, Matrix] = [bMatrix, gMatrix, rMatrix]
+      const r1Matrix = ArrayToMatrix(data[0].r, data[0].width, data[0].height)
+      const r2Matrix = ArrayToMatrix(data[1].r, data[1].width, data[1].height)
+      const r3Matrix = ArrayToMatrix(data[2].r, data[2].width, data[2].height)
+      const matrixImages: [Matrix, Matrix, Matrix] = [r1Matrix, r2Matrix, r3Matrix]
 
       const radianceMaps: [Matrix, Matrix, Matrix] = [
         new Matrix([g.gRed]),
@@ -40,8 +40,8 @@ export const App: React.FC = () => {
 
       // console.log(radianceMaps[0].get(0, 10))
 
-      const foo = getActualRadiance(data[0].width, data[0].height, 3, data.length, matrixImages, radianceMaps, shutterSpeeds)
-      console.log(foo)
+      const foo = getActualRadiance(matrixImages, radianceMaps, shutterSpeeds)
+      console.log(foo, 'THE ACTUAL RADIANCE')
       // setRGBImagesData(data)
     })
 
