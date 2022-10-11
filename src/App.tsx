@@ -4,6 +4,7 @@ import { GlobalStyle } from './styles/GlobalStyle'
 import CanvasImage from './components/CanvasImage'
 import Matrix from 'ml-matrix'
 import { ArrayToMatrix } from './lib/ArrayToMatrix'
+import { saveImage } from '../electron/jimp'
 let appInitialized = false
 
 export const App: React.FC = () => {
@@ -30,7 +31,14 @@ export const App: React.FC = () => {
       const r1Matrix = ArrayToMatrix(data[0].r, data[0].width, data[0].height)
       const r2Matrix = ArrayToMatrix(data[1].r, data[1].width, data[1].height)
       const r3Matrix = ArrayToMatrix(data[2].r, data[2].width, data[2].height)
-      const matrixImages: [Matrix, Matrix, Matrix] = [r1Matrix, r2Matrix, r3Matrix]
+
+      const b1Matrix = ArrayToMatrix(data[0].b, data[0].width, data[0].height)
+      const b2Matrix = ArrayToMatrix(data[1].b, data[1].width, data[1].height)
+      const b3Matrix = ArrayToMatrix(data[2].b, data[2].width, data[2].height)
+
+      const g1Matrix = ArrayToMatrix(data[0].g, data[0].width, data[0].height)
+      const g2Matrix = ArrayToMatrix(data[1].g, data[1].width, data[1].height)
+      const g3Matrix = ArrayToMatrix(data[2].g, data[2].width, data[2].height)
 
       const radianceMaps: [Matrix, Matrix, Matrix] = [
         new Matrix([g.gRed]),
@@ -40,8 +48,23 @@ export const App: React.FC = () => {
 
       // console.log(radianceMaps[0].get(0, 10))
 
-      const foo = getActualRadiance(matrixImages, radianceMaps, shutterSpeeds)
-      console.log(foo, 'THE ACTUAL RADIANCE')
+      const red = getActualRadiance([r1Matrix, r2Matrix, r3Matrix], radianceMaps, shutterSpeeds)
+      const blue = getActualRadiance([b1Matrix, b2Matrix, b3Matrix], radianceMaps, shutterSpeeds)
+      const green = getActualRadiance([g1Matrix, g2Matrix, g3Matrix], radianceMaps, shutterSpeeds)
+
+      const image: Image = {
+        r: new Uint8Array(red.to1DArray()),
+        g: new Uint8Array(green.to1DArray()),
+        b: new Uint8Array(blue.to1DArray()),
+        width: data[0].width,
+        height: data[0].height
+      }
+
+      // Send image to server
+      window.Main.sendImage(JSON.stringify(image))
+      // saveImage(image, image.width, image.height, 'test.jpg')
+
+      // console.log(foo, 'THE ACTUAL RADIANCE')
       // setRGBImagesData(data)
     })
 

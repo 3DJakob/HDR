@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { readImage, readImageAsRGB } from './raw'
 import { loadPNG } from './png'
+import { saveImage } from './jimp'
+import { Image } from '../src/lib/HDR'
 // import nd from 'ndarray'
 
 let mainWindow: BrowserWindow | null
@@ -76,6 +78,11 @@ async function registerListeners (): Promise<void> {
 
         break
     }
+  })
+
+  ipcMain.on('image', (_, image) => {
+    const img: Image = JSON.parse(image)
+    saveImage(img, img.width, img.height, 'test.png')
   })
 }
 

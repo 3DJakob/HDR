@@ -13,6 +13,10 @@ export const api = {
     ipcRenderer.send('message', message)
   },
 
+  sendImage: (image: string) => {
+    ipcRenderer.send('image', image)
+  },
+
   /**
    * Provide an easier way to listen to events
    */
