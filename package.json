@@ -27,6 +27,7 @@
     "react-charts": "^3.0.0-beta.50",
     "react-dom": "^18.2.0",
     "react-image-parser": "^2.0.2",
+    "react-spinners": "^0.13.6",
     "styled-components": "^5.3.5"
   },
   "devDependencies": {
