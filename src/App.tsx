@@ -74,6 +74,8 @@ export const App: React.FC = () => {
     <Container>
       <GlobalStyle />
       <Top>
+        {imageUrl == null ? null : <Image src={imageUrl} onLoad={(e) => onLoad(e)} />}
+        {/* <Image src='https://picsum.photos/200/300' /> */}
         <SquareLoader
           color='#ccc'
           loading={status === 'loading'}
@@ -82,8 +84,6 @@ export const App: React.FC = () => {
           data-testid='loader'
           // style={{ margin: 100 }}
         />
-        {imageUrl == null ? null : <Image src={imageUrl} onLoad={(e) => onLoad(e)} />}
-        {/* <Image src='https://picsum.photos/200/300' /> */}
       </Top>
       <Bottom>
         <Controls>
