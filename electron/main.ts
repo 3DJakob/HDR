@@ -91,7 +91,8 @@ async function registerListeners (): Promise<void> {
 }
 
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'hdrimage', privileges: { bypassCSP: true } }
+  { scheme: 'hdrimage', privileges: { bypassCSP: true } },
+  { scheme: 'originalimage', privileges: { bypassCSP: true } }
 ])
 
 app.on('ready', () => {
@@ -107,6 +108,27 @@ app.on('ready', () => {
 
       const img = HDRMerge(input)
       saveImage(img, img.width, img.height, 'test.png')
+      const imgData = imageToImageData(img)
+      const pngData = lodepng.encode(imgData)
+
+      return Buffer.from(pngData.buffer, pngData.byteOffset, pngData.byteLength)
+    }()).then(
+      // eslint-disable-next-line
+      buffer => callback({ statusCode: 200, data: buffer, mimeType: 'image/png' }),
+      // eslint-disable-next-line
+      error => callback({ statusCode: 500, data: String(error), mimeType: 'text/plain' })
+    )
+  })
+
+  protocol.registerBufferProtocol('originalimage', (request, callback) => {
+    (async function () {
+      const name = request.url.replace(/^originalimage:\/{0,2}/, '').split(',')
+
+      const input = await Promise.all([
+        loadPNG(`${name[0]}.png`)
+      ])
+
+      const img = input[0]
       const imgData = imageToImageData(img)
       const pngData = lodepng.encode(imgData)
 

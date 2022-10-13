@@ -22,6 +22,21 @@ const Top = styled.div`
   background-color: #363531;
 `
 
+const ImageRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  max-width: 100%;
+
+  div img {
+    margin: 0;
+  }
+`
+
+const Spacer = styled.div`
+  width: 40px;
+
+`
+
 const Image = styled.img`
   border-radius: 15px;
   box-shadow: 0 13px 27px -5px hsla(240, 30.1%, 28%, 0.25),0 8px 16px -8px hsla(0, 0%, 0%, 0.3),0 -6px 16px -6px hsla(0, 0%, 0%, 0.03);
@@ -74,8 +89,17 @@ export const App: React.FC = () => {
     <Container>
       <GlobalStyle />
       <Top>
-        {imageUrl == null ? null : <Image src={imageUrl} onLoad={(e) => onLoad(e)} />}
+        {/* {imageUrl == null ? null : <Image src={imageUrl} onLoad={(e) => onLoad(e)} />} */}
         {/* <Image src='https://picsum.photos/200/300' /> */}
+        <ImageRow>
+          <div><Image src={`originalimage:${images[0]}`} /></div>
+          <Spacer />
+          <div><Image src={`originalimage:${images[1]}`} /></div>
+          <Spacer />
+          <div><Image src={`originalimage:${images[2]}`} /></div>
+          {imageUrl == null ? null : <Spacer />}
+          {imageUrl == null ? null : <div><Image src={imageUrl} onLoad={(e) => onLoad(e)} /></div>}
+        </ImageRow>
         <SquareLoader
           color='#ccc'
           loading={status === 'loading'}
