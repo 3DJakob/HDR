@@ -3,6 +3,8 @@ import styled from 'styled-components'
 import { GlobalStyle } from './styles/GlobalStyle'
 import SquareLoader from 'react-spinners/SquareLoader'
 import GSolverHistogram from './components/GSolverHistogram'
+import Input from './components/Input'
+import Button from './components/Button'
 let appInitialized = false
 
 const Container = styled.div`
@@ -36,12 +38,18 @@ const Bottom = styled.div`
   flex: 1;
 `
 
+const Controls = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 export const App: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<null |string>(null)
   const [status, setStatus] = useState<Status>('idle')
   const [g, setG] = useState<[number[], number[], number[]]>([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+  const [images, setImages] = useState<[string, string, string]>(['01low', '02low', '03low'])
 
   useEffect(() => {
     if (appInitialized) return
@@ -55,10 +63,10 @@ export const App: React.FC = () => {
 
   const loadImages = (): void => {
     setStatus('loading')
-    setImageUrl('hdrimage:01low,02low,03low')
+    setImageUrl(`hdrimage:${images[0]},${images[1]},${images[2]}`)
   }
 
-  const onLoad = (): void => {
+  const onLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>): void => {
     setStatus('success')
   }
 
@@ -74,12 +82,16 @@ export const App: React.FC = () => {
           data-testid='loader'
           // style={{ margin: 100 }}
         />
-        {imageUrl == null ? null : <Image src={imageUrl} onLoad={onLoad} />}
+        {imageUrl == null ? null : <Image src={imageUrl} onLoad={(e) => onLoad(e)} />}
         {/* <Image src='https://picsum.photos/200/300' /> */}
       </Top>
       <Bottom>
-        <h2 style={{ color: '#000' }}>{status}</h2>
-        <button onClick={loadImages}>Generate HDR</button>
+        <Controls>
+          <Input placeholder='Image name' value={images[0]} onChange={(value) => setImages([value, images[1], images[2]])} />
+          <Input placeholder='Image name' value={images[1]} onChange={(value) => setImages([images[0], value, images[2]])} />
+          <Input placeholder='Image name' value={images[2]} onChange={(value) => setImages([images[0], images[1], value])} />
+          <Button onClick={loadImages}>HDR merge</Button>
+        </Controls>
         <GSolverHistogram responseFunctions={g} />
       </Bottom>
     </Container>
