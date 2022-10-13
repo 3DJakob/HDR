@@ -1,4 +1,5 @@
 import { Matrix, solve } from 'ml-matrix'
+import { mainWindow } from '../../electron/main'
 import { ArrayToMatrix } from './ArrayToMatrix'
 import { Image } from './Image'
 export { Image } from './Image'
@@ -127,7 +128,7 @@ export function gsolveImage (
 
 export function getActualRadiance (
   images: Matrix[],
-  radianceMaps: [Matrix, Matrix, Matrix],
+  radianceMaps: Matrix,
   shutterSpeed: number[]
 ): Matrix {
   const rows = images[0].rows
@@ -149,7 +150,7 @@ export function getActualRadiance (
         gZij[i].set(
           row,
           column,
-          radianceMaps[i].get(0, images[i].get(row, column)) - shutterSpeed[i]
+          radianceMaps.get(0, images[i].get(row, column)) - shutterSpeed[i]
         )
       }
     }
@@ -236,9 +237,12 @@ export function HDRMerge (images: [Image, Image, Image]): Image {
     new Matrix([g.gBlue])
   ]
 
-  const red = getActualRadiance([r1Matrix, r2Matrix, r3Matrix], radianceMaps, shutterSpeeds)
-  const blue = getActualRadiance([b1Matrix, b2Matrix, b3Matrix], radianceMaps, shutterSpeeds)
-  const green = getActualRadiance([g1Matrix, g2Matrix, g3Matrix], radianceMaps, shutterSpeeds)
+  // send to renderer
+  mainWindow?.webContents.send('responseFunction', [g.gRed, g.gGreen, g.gBlue])
+
+  const red = getActualRadiance([r1Matrix, r2Matrix, r3Matrix], radianceMaps[0], shutterSpeeds)
+  const blue = getActualRadiance([b1Matrix, b2Matrix, b3Matrix], radianceMaps[1], shutterSpeeds)
+  const green = getActualRadiance([g1Matrix, g2Matrix, g3Matrix], radianceMaps[2], shutterSpeeds)
 
   const img = ToneMapping([red, green, blue])
 

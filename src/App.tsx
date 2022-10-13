@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { GlobalStyle } from './styles/GlobalStyle'
-// let appInitialized = false
 import SquareLoader from 'react-spinners/SquareLoader'
+let appInitialized = false
 
 const Container = styled.div`
   display: flex;
@@ -40,15 +40,14 @@ export const App: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<null |string>(null)
   const [status, setStatus] = useState<Status>('idle')
 
-  // useEffect(() => {
-  //   if (appInitialized) return
-  //   window.Main.on('HDRCreated', (filename: string) => {
-  //     setStatus('HDR created with filename: ' + filename)
-  //     console.log('HDR created')
-  //   })
+  useEffect(() => {
+    if (appInitialized) return
+    window.Main.on('responseFunction', (responseFunction: any) => {
+      console.log(responseFunction)
+    })
 
-  //   appInitialized = true
-  // }, [])
+    appInitialized = true
+  }, [])
 
   const loadImages = (): void => {
     setStatus('loading')

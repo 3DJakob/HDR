@@ -5,7 +5,7 @@ import { HDRMerge, Image } from '../src/lib/HDR'
 import lodepng from '@cwasm/lodepng'
 import { imageToImageData } from '../src/lib/Image'
 
-let mainWindow: BrowserWindow | null
+export let mainWindow: BrowserWindow | null
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
