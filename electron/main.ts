@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 import { readImage, readImageAsRGB } from './raw'
 import { loadPNG } from './png'
-import { saveImage } from './jimp'
 import { HDRMerge, Image } from '../src/lib/HDR'
-// import nd from 'ndarray'
+import lodepng from '@cwasm/lodepng'
+import { imageToImageData } from '../src/lib/Image'
 
 let mainWindow: BrowserWindow | null
 
@@ -40,7 +40,7 @@ const convertPNGsToHDRPNG = async (): Promise<void> => {
   const img3 = await loadPNG('03lowml.png')
   // mainWindow?.webContents.send('message', [img1, img2, img3])
   const img = HDRMerge([img1, img2, img3])
-  saveImage(img, img.width, img.height, 'test.png')
+  // saveImage(img, img.width, img.height, 'test.png')
   mainWindow?.webContents.send('HDRCreated', 'test.png')
 }
 
@@ -89,7 +89,36 @@ async function registerListeners (): Promise<void> {
   })
 }
 
-app.on('ready', createWindow)
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'hdrimage', privileges: { bypassCSP: true } }
+])
+
+app.on('ready', () => {
+  protocol.registerBufferProtocol('hdrimage', (request, callback) => {
+    (async function () {
+      const name = request.url.replace(/^hdrimage:\/{0,2}/, '').split(',')
+
+      const input = await Promise.all([
+        loadPNG(`${name[0]}.png`),
+        loadPNG(`${name[1]}.png`),
+        loadPNG(`${name[2]}.png`)
+      ])
+
+      const img = HDRMerge(input)
+      const imgData = imageToImageData(img)
+      const pngData = lodepng.encode(imgData)
+
+      return Buffer.from(pngData.buffer, pngData.byteOffset, pngData.byteLength)
+    }()).then(
+      // eslint-disable-next-line
+      buffer => callback({ statusCode: 200, data: buffer, mimeType: 'image/png' }),
+      // eslint-disable-next-line
+      error => callback({ statusCode: 500, data: String(error), mimeType: 'text/plain' })
+    )
+  })
+
+  createWindow()
+})
   .whenReady()
   .then(registerListeners)
   .catch(e => console.error(e))

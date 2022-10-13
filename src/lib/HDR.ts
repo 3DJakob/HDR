@@ -1,5 +1,7 @@
 import { Matrix, solve } from 'ml-matrix'
 import { ArrayToMatrix } from './ArrayToMatrix'
+import { Image } from './Image'
+export { Image } from './Image'
 
 export function weight (x: number): number {
   let out = 0
@@ -10,14 +12,6 @@ export function weight (x: number): number {
   }
 
   return out
-}
-
-export interface Image {
-  r: Uint8Array
-  g: Uint8Array
-  b: Uint8Array
-  width: number
-  height: number
 }
 
 export function extractSampleValuesFromImages (images: Image[]): [Matrix, Matrix, Matrix] {
@@ -222,7 +216,7 @@ export function ToneMapping (
 export function HDRMerge (images: [Image, Image, Image]): Image {
   const samples = extractSampleValuesFromImages(images)
   const shutterSpeeds = [Math.log(1 / 400), Math.log(1 / 125), Math.log(1 / 20)]
-  const g = gsolveImage(samples, shutterSpeeds, 100, 10, samples.length)
+  const g = gsolveImage(samples, shutterSpeeds, 500, 10, samples.length)
 
   const r1Matrix = ArrayToMatrix(images[0].r, images[0].width, images[0].height)
   const r2Matrix = ArrayToMatrix(images[1].r, images[1].width, images[1].height)

@@ -1,4 +1,7 @@
-import Jimp from 'jimp'
+import ImageData from '@canvas/image-data'
+import lodepng from '@cwasm/lodepng'
+import Jimp from 'jimp/*'
+
 import { Image } from '../src/lib/HDR'
 
 export const sampleImageData = [
@@ -25,8 +28,35 @@ export function reshapeArrayToImage (array: number[], width: number, height: num
   return out
 }
 
+export async function encodeImageToPNG (imageData: Image): Promise<Buffer> {
+  const { width, height } = imageData
+  const result = new ImageData(width, height)
+
+  console.time('b')
+  let dst = 0
+  for (let src = 0; src < width * height; src++) {
+    result.data[dst++] = imageData.r[src]
+    result.data[dst++] = imageData.g[src]
+    result.data[dst++] = imageData.b[src++]
+    result.data[dst++] = 255
+  }
+  console.timeEnd('b')
+
+  console.time('a')
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      result.data[y * width * 4 + x * 4 + 0] = imageData.r[y * width + x]
+      result.data[y * width * 4 + x * 4 + 1] = imageData.g[y * width + x]
+      result.data[y * width * 4 + x * 4 + 2] = imageData.b[y * width + x]
+      result.data[y * width * 4 + x * 4 + 3] = 255
+    }
+  }
+  console.timeEnd('a')
+
+  return lodepng.encode(result)
+}
+
 export function saveImage (imageData: Image, width: number, height: number, filename: string): void {
-  // console.warn(imageData.length, imageData[0].length)
   const image = new Jimp(width, height, function (err, image) {
     if (err != null) throw err
 
@@ -36,12 +66,6 @@ export function saveImage (imageData: Image, width: number, height: number, file
         image.setPixelColor(color, x, y)
       }
     }
-
-    // imageData.r.forEach((row, y) => {
-    //   // row.forEach((color, x) => {
-    //   image.setPixelColor(Jimp.rgbaToInt(), x, y)
-    //   // })
-    // })
 
     image.write(filename, (err) => {
       if (err != null) throw err
