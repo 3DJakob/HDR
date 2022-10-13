@@ -12,7 +12,7 @@ export function weight (x: number): number {
     out = 255 - x
   }
 
-  return out
+  return out + 128
 }
 
 export function extractSampleValuesFromImages (images: Image[]): [Matrix, Matrix, Matrix] {
