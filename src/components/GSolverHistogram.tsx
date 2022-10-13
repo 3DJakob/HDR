@@ -1,9 +1,24 @@
 import React from 'react'
 import { AxisOptions, Chart, Series } from 'react-charts'
+import styled from 'styled-components'
 
 export interface GSolverHistogramProps {
   responseFunctions: [number[], number[], number[]]
 }
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+`
+
+const GraphContainer = styled.div`
+  flex: 1;
+  height: 200px;
+  margin: 20px;
+  box-sizing: 'border-box';
+`
 
 const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }) => {
   const getSeriesStyle = React.useCallback((series: Series<{ date: number, value: number }>) => {
@@ -71,8 +86,8 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }
   )
 
   return (
-    <div style={{ height: 200, width: '100%', display: 'flex', flexDirection: 'row' }}>
-      <div style={{ height: 200, width: '100%' }}>
+    <Container>
+      <GraphContainer>
         <Chart
           options={{
             data: [data[0]],
@@ -81,8 +96,8 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }
             getSeriesStyle
           }}
         />
-      </div>
-      <div style={{ height: 200, width: '100%' }}>
+      </GraphContainer>
+      <GraphContainer>
         <Chart
           options={{
             data: [data[1]],
@@ -91,8 +106,8 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }
             getSeriesStyle
           }}
         />
-      </div>
-      <div style={{ height: 200, width: '100%' }}>
+      </GraphContainer>
+      <GraphContainer>
         <Chart
           options={{
             data: [data[2]],
@@ -101,8 +116,8 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }
             getSeriesStyle
           }}
         />
-      </div>
-    </div>
+      </GraphContainer>
+    </Container>
   )
 }
 
