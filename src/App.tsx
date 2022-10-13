@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { GlobalStyle } from './styles/GlobalStyle'
 import SquareLoader from 'react-spinners/SquareLoader'
+import GSolverHistogram from './components/GSolverHistogram'
 let appInitialized = false
 
 const Container = styled.div`
@@ -23,6 +24,7 @@ const Image = styled.img`
   border-radius: 15px;
   box-shadow: 0 13px 27px -5px hsla(240, 30.1%, 28%, 0.25),0 8px 16px -8px hsla(0, 0%, 0%, 0.3),0 -6px 16px -6px hsla(0, 0%, 0%, 0.03);
   margin: 20px;
+  width: 100%;
 `
 
 const Bottom = styled.div`
@@ -39,11 +41,13 @@ type Status = 'idle' | 'loading' | 'success' | 'error'
 export const App: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<null |string>(null)
   const [status, setStatus] = useState<Status>('idle')
+  const [g, setG] = useState<[number[], number[], number[]]>([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
 
   useEffect(() => {
     if (appInitialized) return
-    window.Main.on('responseFunction', (responseFunction: any) => {
+    window.Main.on('responseFunction', (responseFunction: [Uint8Array, Uint8Array, Uint8Array]) => {
       console.log(responseFunction)
+      setG([Array.from(responseFunction[0]), Array.from(responseFunction[1]), Array.from(responseFunction[2])])
     })
 
     appInitialized = true
@@ -76,6 +80,7 @@ export const App: React.FC = () => {
       <Bottom>
         <h2 style={{ color: '#000' }}>{status}</h2>
         <button onClick={loadImages}>Generate HDR</button>
+        <GSolverHistogram responseFunctions={g} />
       </Bottom>
     </Container>
   )

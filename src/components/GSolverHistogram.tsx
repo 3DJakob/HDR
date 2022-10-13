@@ -1,16 +1,11 @@
-import Matrix from 'ml-matrix'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { AxisOptions, Chart, Series } from 'react-charts'
-import { convertRawToRGB } from '../lib/BayerFilter'
-import { gSolveOneChannel } from '../lib/HDR'
 
 export interface GSolverHistogramProps {
-  raw?: [Uint8Array, Uint8Array, Uint8Array]
+  responseFunctions: [number[], number[], number[]]
 }
 
-const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ raw }) => {
-  const [g, setG] = React.useState<[number[], number[], number[]]>([[0, 100, 150], [0, 100, 150], [0, 100, 150]])
-
+const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ responseFunctions }) => {
   const getSeriesStyle = React.useCallback((series: Series<{ date: number, value: number }>) => {
     const colorPalette = {
       Red: 'red',
@@ -27,7 +22,7 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ raw }) => {
   const data = [
     {
       label: 'Red',
-      data: g[0].map((value, i) => {
+      data: responseFunctions[0].map((value, i) => {
         return {
           date: i,
           value
@@ -36,7 +31,7 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ raw }) => {
     },
     {
       label: 'Green',
-      data: g[1].map((value, i) => {
+      data: responseFunctions[1].map((value, i) => {
         return {
           date: i,
           value
@@ -45,7 +40,7 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ raw }) => {
     },
     {
       label: 'Blue',
-      data: g[2].map((value, i) => {
+      data: responseFunctions[2].map((value, i) => {
         return {
           date: i,
           value
@@ -75,50 +70,38 @@ const GSolverHistogram: React.FC<GSolverHistogramProps> = ({ raw }) => {
     []
   )
 
-  useEffect(() => {
-    if (raw == null) return
-
-    console.warn('NEW DATA LOADED')
-
-    const width = 2848
-    const height = 4288
-
-    const rgbs = raw.map(d => convertRawToRGB(d, width, height))
-    console.log('rgbs constructed')
-    console.log('size', rgbs[0].r.length)
-    const rMatrix = Matrix.zeros(rgbs[0].r.length, raw.length)
-    const gMatrix = Matrix.zeros(rgbs[0].r.length, raw.length)
-    const bMatrix = Matrix.zeros(rgbs[0].r.length, raw.length)
-    console.log('matrixes constructed')
-    for (let i = 0; i < raw.length; i++) {
-      console.log('inside loop', i)
-      console.log('rgb')
-      rMatrix.setColumn(i, rgbs[i].r)
-      gMatrix.setColumn(i, rgbs[i].g)
-      bMatrix.setColumn(i, rgbs[i].b)
-    }
-
-    const shutterSpeeds = [Math.log(1 / 400), Math.log(1 / 125), Math.log(1 / 20)]
-    const samples = 150
-    const smothness = 100
-    const resRed = gSolveOneChannel(rMatrix, shutterSpeeds, smothness, samples, 3)
-    const resGreen = gSolveOneChannel(gMatrix, shutterSpeeds, smothness, samples, 3)
-    const resBlue = gSolveOneChannel(bMatrix, shutterSpeeds, smothness, samples, 3)
-    // setG([resRed.g, resGreen.g, resBlue.g])
-
-    console.log('res', resRed.g)
-  }, [raw])
-
   return (
-    <div style={{ height: 200 }}>
-      <Chart
-        options={{
-          data,
-          primaryAxis,
-          secondaryAxes,
-          getSeriesStyle
-        }}
-      />
+    <div style={{ height: 200, width: '100%', display: 'flex', flexDirection: 'row' }}>
+      <div style={{ height: 200, width: '100%' }}>
+        <Chart
+          options={{
+            data: [data[0]],
+            primaryAxis,
+            secondaryAxes,
+            getSeriesStyle
+          }}
+        />
+      </div>
+      <div style={{ height: 200, width: '100%' }}>
+        <Chart
+          options={{
+            data: [data[1]],
+            primaryAxis,
+            secondaryAxes,
+            getSeriesStyle
+          }}
+        />
+      </div>
+      <div style={{ height: 200, width: '100%' }}>
+        <Chart
+          options={{
+            data: [data[2]],
+            primaryAxis,
+            secondaryAxes,
+            getSeriesStyle
+          }}
+        />
+      </div>
     </div>
   )
 }
