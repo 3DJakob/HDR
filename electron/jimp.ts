@@ -1,6 +1,6 @@
 import ImageData from '@canvas/image-data'
 import lodepng from '@cwasm/lodepng'
-import Jimp from 'jimp/*'
+import Jimp from 'jimp'
 
 import { Image } from '../src/lib/HDR'
 

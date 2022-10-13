@@ -4,6 +4,7 @@ import { loadPNG } from './png'
 import { HDRMerge, Image } from '../src/lib/HDR'
 import lodepng from '@cwasm/lodepng'
 import { imageToImageData } from '../src/lib/Image'
+import { saveImage } from './jimp'
 
 export let mainWindow: BrowserWindow | null
 
@@ -105,6 +106,7 @@ app.on('ready', () => {
       ])
 
       const img = HDRMerge(input)
+      saveImage(img, img.width, img.height, 'test.png')
       const imgData = imageToImageData(img)
       const pngData = lodepng.encode(imgData)
 
